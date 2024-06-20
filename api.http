@@ -1,4 +1,4 @@
-GET http://localhost:3000/events
+GET http://localhost:3002/eventos
 
 ###
 # @name createEvent
@@ -51,15 +51,13 @@ Content-Type: application/json
 ###
 POST http://localhost:3000/events/{{eventId}}/reserve
 Content-Type: application/json
-X-Api-Token: 1234
+X-Api-Token:  000
 
 {
   "spots": ["{{ spotName }}"],
   "ticket_kind": "full",
   "email": "test@test.com"
 }
-
-
 
 GET http://localhost:3001/eventos
 
@@ -84,7 +82,7 @@ Content-Type: application/json
 GET http://localhost:3001/eventos/{{eventoId}}/lugares
 
 ###
-# @name create
+# @name criarLugar
 POST http://localhost:3001/eventos/{{eventoId}}/lugares
 Content-Type: application/json
 
@@ -94,16 +92,16 @@ Content-Type: application/json
 
 ###
 
-@lugarNome = {{ create.response.body.name }}
+@lugarNome = {{ criarLugar.response.body.name }}
 
 ### Reserve spots
 
-POST http://localhost:3001/events/{{eventId}}/reserve
-Content-Type: : application/json
-
+POST http://localhost:3001/eventos/{{eventoId}}/reservar
+Content-Type: application/json
+X-Api-Token: 000
 
 {
-  "spots": ["{{lugarNome}}"],
-  "ticket_kind": "full",
+  "lugares": ["{{lugarNome}}"],
+  "tipo_ingresso": "inteira",
   "email": "user1@test.com"
 }
