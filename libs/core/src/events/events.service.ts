@@ -4,6 +4,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { ReserveSpotDto } from './dto/reserve-spot.dto';
 import { Prisma, SpotStatus, TicketStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { response } from 'express';
 
 @Injectable()
 export class EventsService {
@@ -51,14 +52,23 @@ export class EventsService {
         },
       },
     });
-    console.log(spots.length, dto.spots.length);
+    if (!spots) {
+      response.status(404).json({
+        message: `Spots not exists: ${spots}`,
+      });
+      return;
+    }
+
     if (spots.length !== dto.spots.length) {
       const foundSpotsName = spots.map((spot) => spot.name);
       console.log(foundSpotsName);
       const notFOundSpotsName = dto.spots.filter(
         (spotName) => !foundSpotsName.includes(spotName),
       );
-      throw new Error(`Spots ${notFOundSpotsName.join(', ')} not found`);
+      response.status(400).send({
+        message: `Spots ${notFOundSpotsName} are not available for reservation`,
+      });
+      return;
     }
     try {
       const tickets = await this.prismaService.$transaction(
@@ -103,7 +113,9 @@ export class EventsService {
         switch (e.code) {
           case 'P2002': //unique constrain violation
           case 'P2034': // transation conflict
-            throw new Error('Some spots are already reserved');
+            throw new Error(
+              `${response.status(400)} Some spots are already reserved`,
+            );
           default:
             throw e;
         }

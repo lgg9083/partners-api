@@ -1,4 +1,4 @@
-GET http://localhost:3002/eventos
+GET http://localhost:3001/eventos
 
 ###
 # @name createEvent
