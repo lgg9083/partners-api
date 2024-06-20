@@ -13,13 +13,13 @@ import { CreateEventRequest } from './request/create-event.request';
 import { UpdateEventRequest } from './request/update-event.resquest';
 import { ReserveSpotRequest } from './request/reserve-spot.resquest';
 import { AuthGuard } from '@app/core/auth/auth.guard';
-
+import { ValidationPipe } from '@nestjs/common';
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  create(@Body() createEventRequest: CreateEventRequest) {
+  create(@Body(new ValidationPipe()) createEventRequest: CreateEventRequest) {
     return this.eventsService.create(createEventRequest);
   }
 
@@ -37,7 +37,7 @@ export class EventsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateEventRequest: UpdateEventRequest,
+    @Body(new ValidationPipe()) updateEventRequest: UpdateEventRequest,
   ) {
     return this.eventsService.update(id, updateEventRequest);
   }
@@ -50,7 +50,7 @@ export class EventsController {
   @UseGuards(AuthGuard)
   @Post(':id/reserve')
   reserveSpots(
-    @Body() Request: ReserveSpotRequest,
+    @Body(new ValidationPipe()) Request: ReserveSpotRequest,
     @Param('id') eventId: string,
   ) {
     console.log(Request);

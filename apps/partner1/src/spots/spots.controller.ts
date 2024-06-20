@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ValidationPipe,
 } from '@nestjs/common';
 import { SpotsService } from '@app/core/spots/spots.service';
 import { CreateSpotRequest } from './request/create-spot.request';
@@ -17,7 +18,7 @@ export class SpotsController {
 
   @Post()
   create(
-    @Body() createSpotRequest: CreateSpotRequest,
+    @Body(new ValidationPipe()) createSpotRequest: CreateSpotRequest,
     @Param('eventId') eventId: string,
   ) {
     return this.spotsService.create({
@@ -40,7 +41,7 @@ export class SpotsController {
   update(
     @Param('spotId') spotId: string,
     @Param('eventId') eventId: string,
-    @Body() UpdateSpotResquest: UpdateSpotResquest,
+    @Body(new ValidationPipe()) UpdateSpotResquest: UpdateSpotResquest,
   ) {
     return this.spotsService.update(eventId, spotId, UpdateSpotResquest);
   }
