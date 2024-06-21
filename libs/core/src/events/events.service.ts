@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { ReserveSpotDto } from './dto/reserve-spot.dto';
@@ -44,6 +44,7 @@ export class EventsService {
     });
   }
   async reserveSpot(dto: ReserveSpotDto & { eventId: string }) {
+    console.log(ReserveSpotDto);
     const spots = await this.prismaService.spot.findMany({
       where: {
         eventId: dto.eventId,
@@ -53,26 +54,25 @@ export class EventsService {
       },
     });
     if (!spots) {
-      response.status(404).json({
-        message: `Spots not exists: ${spots}`,
-      });
-      return;
+      throw new UnauthorizedException('Spots not exists or are not authorized');
     }
 
     if (spots.length !== dto.spots.length) {
       const foundSpotsName = spots.map((spot) => spot.name);
-      console.log(foundSpotsName);
+      console.log(foundSpotsName, 'chegando aqui ');
       const notFOundSpotsName = dto.spots.filter(
         (spotName) => !foundSpotsName.includes(spotName),
       );
-      response.status(400).send({
-        message: `Spots ${notFOundSpotsName} are not available for reservation`,
-      });
-      return;
+      if (notFOundSpotsName) {
+        throw new UnauthorizedException(
+          `Spots ${notFOundSpotsName} are not available for reservation`,
+        );
+      }
     }
     try {
       const tickets = await this.prismaService.$transaction(
         async (prisma) => {
+          console.log(prisma, 'chegando');
           await prisma.reservationHistory.createMany({
             data: spots.map((spot) => ({
               spotId: spot.id,
@@ -113,9 +113,7 @@ export class EventsService {
         switch (e.code) {
           case 'P2002': //unique constrain violation
           case 'P2034': // transation conflict
-            throw new Error(
-              `${response.status(400)} Some spots are already reserved`,
-            );
+            throw new UnauthorizedException('Some spots are already reserved');
           default:
             throw e;
         }
